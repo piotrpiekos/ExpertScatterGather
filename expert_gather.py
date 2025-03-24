@@ -489,7 +489,7 @@ class ExpertGatherFunction(torch.autograd.Function):
 
 
 
-class SelectiveLinearLayer(nn.Module):
+class ExpertGather(nn.Module):
 
     def __init__(self, E, I, J, bias=False):
         super().__init__()
@@ -522,7 +522,6 @@ class SelectiveLinearLayer(nn.Module):
         y = ExpertGatherFunction.apply(x, self.W, Ind)
         if self.bias:
             y = y + self.bias # todo: fix, now shapes don't match, output should have shape [B, K, E, J]
-
         return y 
 
     def to(self, device, *args, **kwargs):

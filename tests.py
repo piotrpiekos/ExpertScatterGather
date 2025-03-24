@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from expert_gather import SelectiveLinearLayer
+from expert_gather import ExpertGather
 
 DEVICE = 'cuda'
 
@@ -18,7 +18,7 @@ class TorchLinearGather(nn.Module):
         Y_gathered = torch.gather(Y, dim=2, index=ind.unsqueeze(-1).expand(-1,-1,-1,self.J))
         return Y_gathered
     
-    def match_linear(self, egs_gather: SelectiveLinearLayer):
+    def match_linear(self, egs_gather: ExpertGather):
         self.head_projection.weight = nn.Parameter(egs_gather.W.reshape(I, E*J))
 
 
@@ -36,7 +36,7 @@ class TorchEinsumGather(nn.Module):
         Y_gathered = torch.gather(Y, dim=2, index=ind.unsqueeze(-1).expand(-1,-1,-1,self.J))
         return Y_gathered
     
-    def match_linear(self, egs_gather: SelectiveLinearLayer):
+    def match_linear(self, egs_gather: ExpertGather):
         self.W = nn.Parameter(egs_gather.W)
     
 
@@ -46,7 +46,7 @@ def random_test(B, T, K, E, I, J):
     Ind = torch.randint(0, T-1, (B, E, K), device=DEVICE, dtype=torch.int16, requires_grad=False)
     Ind64 = Ind.to(torch.int64)
 
-    egs_expert_gather = SelectiveLinearLayer(E, I, J).to(DEVICE)
+    egs_expert_gather = ExpertGather(E, I, J).to(DEVICE)
     torch_expert_gather = TorchEinsumGather(E, I, J).to(DEVICE)
     # match the weights of both
     torch_expert_gather.W = nn.Parameter(egs_expert_gather.W)
