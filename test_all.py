@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from expert_gather import ExpertGather
+from expert_gather_mgpu import ExpertGather
 
 DEVICE = 'cuda'
 
@@ -40,10 +40,10 @@ class TorchEinsumGather(nn.Module):
         self.W = nn.Parameter(egs_gather.W)
     
 
-def random_test(B, T, K, E, I, J):
+def shape_test(B, T, K, E, I, J):
     X = torch.randn((B, T, I), device=DEVICE, dtype=torch.float32, requires_grad=True)
     W = torch.randn((E, I, J), device=DEVICE, dtype=torch.float32, requires_grad=True)
-    Ind = torch.randint(0, T-1, (B, E, K), device=DEVICE, dtype=torch.int16, requires_grad=False)
+    Ind = torch.randint(0, T, (B, E, K), device=DEVICE, dtype=torch.int16, requires_grad=False)
     Ind64 = Ind.to(torch.int64)
 
     egs_expert_gather = ExpertGather(E, I, J).to(DEVICE)
@@ -75,10 +75,11 @@ def random_test(B, T, K, E, I, J):
 
     
 
-
-
-
-B, T, I = 64, 512, 1024   # For X: [B, T, I]
-E, J = 16, 64          # For W (grad_W): [E, I, J]
-K = 64
-random_test(B, T, K, E, I, J)
+def test_gather_random():
+    max_val = 128
+    num_tests = 10
+    for _ in range(num_tests):
+        B,T,K,E,I,J = torch.randint(1, max_val, (6,))
+        print('testing shape B: ', B, ', T: ', T, ', K: ', K, ', E: ', E, ', I: ', I, ', J:', J)
+        shape_test(B,T,K,E,I,J)
+test_gather_random()
