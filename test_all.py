@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 
-from expert_gather import ExpertGather, ExpertScatter
+from egs import ExpertGather, ExpertScatter
 
 DEVICE = 'cuda'
 
