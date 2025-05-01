@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 from egs import ExpertGather, ExpertScatter
-from egs.baselines import TorchLinearGather, TorchEinsumGather, TorchEinsumScatter
+from egs.baselines import TorchLinearGather, TorchEinsumGather, TorchEinsumScatter, TorchReshapedEmbeddingGatherEinsum, TorchFusedReshapedEmbeddingGatherEinsum
 
 DEVICE = 'cuda'
 
@@ -17,7 +17,9 @@ def shape_test_gather(B, T, K, E, I, J):
     Ind64 = Ind.to(torch.int64)
 
     egs_expert_gather = ExpertGather(E, I, J).to(DEVICE)
-    torch_expert_gather = TorchEinsumGather(E, I, J).to(DEVICE)
+    #torch_expert_gather = TorchEinsumGather(E, I, J).to(DEVICE)
+    # torch_expert_gather = TorchReshapedEmbeddingGatherEinsum(E, I, J).to(DEVICE)
+    torch_expert_gather = TorchFusedReshapedEmbeddingGatherEinsum(E, I, J).to(DEVICE)
     # match the weights of both
     torch_expert_gather.W = nn.Parameter(egs_expert_gather.W)
 
